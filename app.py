@@ -46,7 +46,6 @@ def json_request():
     if zen is None:
         # 更新仓库
         pop = subprocess.Popen('git pull', cwd=cwd, shell=True)
-        pop.wait()
     else:
         # 新建文件夹
         pop = subprocess.Popen('mkdir -p {}'.format(cwd), shell=True)
@@ -55,7 +54,6 @@ def json_request():
         token = os.getenv('GITHUB_TOKEN', default='')
         pop = subprocess.Popen(
             'git clone https://{}@github.com/{}.git'.format(token, full_name), cwd='{}/..'.format(cwd), shell=True)
-        pop.wait()
 
     return '200'
 
