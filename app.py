@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask import request
 import subprocess
 import hmac
@@ -18,6 +18,12 @@ def verify_sha256(data: bytes, signature: str) -> bool:
 def hello_world():
     print(request.data)
     return 'Hello World!'
+
+
+@app.route('/blog/<author>/<post>')
+def blog(author, post):
+    post_path = '/static/blog/{}/{}.md'.format(author, post)
+    return render_template('BlogPost.html', post_path=post_path)
 
 
 @app.route('/hook', methods=["POST"])
