@@ -3,6 +3,7 @@ from flask import request
 import subprocess
 import hmac
 import os
+import json
 
 app = Flask(__name__)
 
@@ -19,20 +20,43 @@ def hello_world():
     return 'Hello World!'
 
 
-@app.route('/json', methods=["POST"])
+@app.route('/hook', methods=["POST"])
 def json_request():
-    # 接收处理json数据请求
     try:
         signature = request.headers['X-Hub-Signature-256']
     except KeyError:
         return 'format error', 401
     data = request.data
 
+    # 验证秘钥
     if not verify_sha256(data, signature):
         return 'sha256 verify error', 401
 
-    pop = subprocess.Popen('git pull', cwd='./static/blog', shell=True)
-    pop.wait()
+    json_data = json.loads(data)
+
+    # 使用zen来区分新建还是更新
+    try:
+        zen = json_data['zen']
+    except KeyError:
+        zen = None
+
+    full_name = json_data['repository']['full_name']
+    cwd = './static/blog/{}'.format(full_name)
+
+    if zen is None:
+        # 更新仓库
+        pop = subprocess.Popen('git pull', cwd=cwd, shell=True)
+        pop.wait()
+    else:
+        # 新建文件夹
+        pop = subprocess.Popen('mkdir -p {}'.format(cwd), shell=True)
+        pop.wait()
+        # clone 仓库
+        token = os.getenv('GITHUB_TOKEN', default='')
+        pop = subprocess.Popen(
+            'git clone https://{}@github.com/{}.git'.format(token, full_name), cwd='{}/..'.format(cwd), shell=True)
+        pop.wait()
+
     return '200'
 
 
