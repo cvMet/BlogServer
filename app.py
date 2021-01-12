@@ -1,9 +1,10 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 from flask import request
 import subprocess
 import hmac
 import os
 import json
+import re
 
 app = Flask(__name__)
 
@@ -20,10 +21,13 @@ def hello_world():
     return 'Hello World!'
 
 
-@app.route('/static/blog/<author>/<post>')
-def blog(author, post):
-    post_path = '/static/blog/{}/{}.md'.format(author, post)
-    return render_template('BlogPost.html', post_path=post_path)
+@app.route('/static/blog/<author>/<path>')
+def blog(author, path):
+    if re.search(r'\.', path, re.M | re.I) is None:
+        post_path = '/static/blog/{}/{}.md'.format(author, path)
+        return render_template('BlogPost.html', post_path=post_path)
+    else:
+        return send_from_directory('static/blog/{}'.format(author), path)
 
 
 @app.route('/404')
