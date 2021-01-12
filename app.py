@@ -20,10 +20,15 @@ def hello_world():
     return 'Hello World!'
 
 
-@app.route('/blog/<author>/<post>')
+@app.route('/static/blog/<author>/<post>')
 def blog(author, post):
     post_path = '/static/blog/{}/{}.md'.format(author, post)
     return render_template('BlogPost.html', post_path=post_path)
+
+
+@app.route('/404')
+def page_not_found():
+    return 'page not found', 404
 
 
 @app.route('/hook', methods=["POST"])
