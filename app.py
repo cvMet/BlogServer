@@ -5,6 +5,7 @@ import hmac
 import os
 import json
 import re
+from gevent import pywsgi
 
 app = Flask(__name__)
 
@@ -32,7 +33,7 @@ def blog(author, path):
 
 @app.route('/404')
 def page_not_found():
-    return 'page not found', 404
+    return 'page not found', 200
 
 
 @app.route('/hook', methods=["POST"])
@@ -74,8 +75,5 @@ def json_request():
 
 
 if __name__ == '__main__':
-    app.run(
-        host='0.0.0.0',
-        port=25001,
-        debug=True
-    )
+    server = pywsgi.WSGIServer(('0.0.0.0', 25001), app)
+    server.serve_forever()
